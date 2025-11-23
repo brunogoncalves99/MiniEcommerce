@@ -1,0 +1,251 @@
+@{
+    ViewData["Title"] = "Meus Pedidos";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-shopping-bag me-2"></i>Meus Pedidos</h2>
+            <p class="text-muted">Acompanhe o histórico dos seus pedidos</p>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center my-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Carregando pedidos...</p>
+    </div>
+
+    <!-- Lista de Pedidos -->
+    <div id="pedidos-lista">
+        <!-- Pedidos serão carregados aqui -->
+    </div>
+
+    <!-- Sem pedidos -->
+    <div id="sem-pedidos" class="alert alert-info text-center" style="display: none;">
+        <i class="fas fa-info-circle me-2"></i>
+        Você ainda não fez nenhum pedido. 
+        <a href="/Home/Index">Comece a comprar agora!</a>
+    </div>
+</div>
+
+<!-- Modal Detalhes do Pedido -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt me-2"></i>Detalhes do Pedido
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalhes-conteudo">
+                <!-- Detalhes serão carregados aqui -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        carregarPedidos();
+    });
+
+    function carregarPedidos() {
+        $('#loading').show();
+        $('#pedidos-lista').empty();
+
+        $.ajax({
+            url: '/Pedidos/ObterMeusPedidos',
+            type: 'GET',
+            success: function(response) {
+                $('#loading').hide();
+                
+                if (response.sucesso && response.dados && response.dados.length > 0) {
+                    exibirPedidos(response.dados);
+                } else {
+                    $('#sem-pedidos').show();
+                }
+            },
+            error: function() {
+                $('#loading').hide();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Erro ao carregar pedidos'
+                });
+            }
+        });
+    }
+
+    function exibirPedidos(pedidos) {
+        var container = $('#pedidos-lista');
+        container.empty();
+
+        pedidos.forEach(function(pedido) {
+            var statusClass = obterClasseStatus(pedido.status);
+            var statusIcon = obterIconeStatus(pedido.status);
+            var data = new Date(pedido.dataCriacao).toLocaleDateString('pt-BR');
+
+            var card = `
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Pedido #${pedido.id}</strong>
+                            <span class="badge ${statusClass} ms-2">
+                                <i class="${statusIcon} me-1"></i>${pedido.statusDescricao}
+                            </span>
+                        </div>
+                        <small class="text-muted">${data}</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <small class="text-muted">Rastreio:</small>
+                                <p class="mb-0"><strong>${pedido.numeroRastreio}</strong></p>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Subtotal:</small>
+                                <p class="mb-0">R$ ${pedido.valorSubtotal.toFixed(2)}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Desconto:</small>
+                                <p class="mb-0 text-success">- R$ ${pedido.valorDesconto.toFixed(2)}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Total:</small>
+                                <p class="mb-0"><strong class="text-primary">R$ ${pedido.valorTotal.toFixed(2)}</strong></p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">${pedido.itens.length} item(ns)</small>
+                                ${pedido.codigoCupom ? `<span class="badge bg-success ms-2">Cupom: ${pedido.codigoCupom}</span>` : ''}
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="verDetalhes(${pedido.id})">
+                                <i class="fas fa-eye me-1"></i>Ver Detalhes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.append(card);
+        });
+    }
+
+    function verDetalhes(pedidoId) {
+        $.ajax({
+            url: '/Pedidos/ObterPorId?id=' + pedidoId,
+            type: 'GET',
+            success: function(response) {
+                if (response.sucesso && response.dados) {
+                    mostrarDetalhes(response.dados);
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Erro ao carregar detalhes'
+                });
+            }
+        });
+    }
+
+    function mostrarDetalhes(pedido) {
+        var statusClass = obterClasseStatus(pedido.status);
+        var data = new Date(pedido.dataCriacao).toLocaleDateString('pt-BR');
+        
+        var itensHtml = '';
+        pedido.itens.forEach(function(item) {
+            itensHtml += `
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <div class="d-flex align-items-center">
+                        <img src="${item.imagemProduto}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded me-3">
+                        <div>
+                            <strong>${item.nomeProduto}</strong>
+                            <br>
+                            <small class="text-muted">Qtd: ${item.quantidade} x R$ ${item.valorUnitario.toFixed(2)}</small>
+                        </div>
+                    </div>
+                    <strong>R$ ${item.valorTotal.toFixed(2)}</strong>
+                </div>
+            `;
+        });
+
+        var html = `
+            <div class="mb-3">
+                <h6>Informações do Pedido</h6>
+                <p class="mb-1"><strong>Pedido:</strong> #${pedido.id}</p>
+                <p class="mb-1"><strong>Data:</strong> ${data}</p>
+                <p class="mb-1"><strong>Rastreio:</strong> ${pedido.numeroRastreio}</p>
+                <p class="mb-1">
+                    <strong>Status:</strong> 
+                    <span class="badge ${statusClass}">${pedido.statusDescricao}</span>
+                </p>
+            </div>
+
+            <hr>
+
+            <div class="mb-3">
+                <h6>Itens do Pedido</h6>
+                ${itensHtml}
+            </div>
+
+            <hr>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <strong>R$ ${pedido.valorSubtotal.toFixed(2)}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-success">Desconto:</span>
+                    <strong class="text-success">- R$ ${pedido.valorDesconto.toFixed(2)}</strong>
+                </div>
+                ${pedido.codigoCupom ? `
+                    <div class="alert alert-success small mb-2">
+                        <i class="fas fa-ticket-alt me-1"></i>
+                        Cupom <strong>${pedido.codigoCupom}</strong> aplicado
+                    </div>
+                ` : ''}
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Total:</strong>
+                    <strong class="text-primary fs-5">R$ ${pedido.valorTotal.toFixed(2)}</strong>
+                </div>
+            </div>
+        `;
+
+        $('#detalhes-conteudo').html(html);
+        new bootstrap.Modal(document.getElementById('modalDetalhes')).show();
+    }
+
+    function obterClasseStatus(status) {
+        const classes = {
+            1: 'bg-warning',      // Pendente
+            2: 'bg-info',         // Processando
+            3: 'bg-primary',      // Em Trânsito
+            4: 'bg-success',      // Entregue
+            5: 'bg-secondary',    // Finalizado
+            6: 'bg-danger'        // Cancelado
+        };
+        return classes[status] || 'bg-secondary';
+    }
+
+    function obterIconeStatus(status) {
+        const icones = {
+            1: 'fas fa-clock',
+            2: 'fas fa-cog fa-spin',
+            3: 'fas fa-truck',
+            4: 'fas fa-check-circle',
+            5: 'fas fa-flag-checkered',
+            6: 'fas fa-times-circle'
+        };
+        return icones[status] || 'fas fa-question';
+    }
+</script>
+}

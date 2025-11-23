@@ -1,0 +1,424 @@
+﻿@{
+    ViewData["Title"] = "Gerenciar Produtos";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-box me-2"></i>Gerenciar Produtos</h2>
+            <p class="text-muted mb-0">Cadastre, edite e controle o estoque de produtos</p>
+        </div>
+        <button class="btn btn-primary" id="btnNovoProduto">
+            <i class="fas fa-plus me-2"></i>Novo Produto
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center my-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Carregando produtos...</p>
+    </div>
+
+    <!-- Tabela de Produtos -->
+    <div class="card shadow">
+        <div class="card-body">
+            <table class="table table-hover" id="tabelaProdutos">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th>Preço</th>
+                        <th>Estoque</th>
+                        <th>Status</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Produtos serão carregados aqui -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Produto -->
+<div class="modal fade" id="modalProduto" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitulo">
+                    <i class="fas fa-box me-2"></i>Novo Produto
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="formProduto">
+                    <input type="hidden" id="produtoId" value="0">
+
+                    <div class="row">
+                        <!-- Nome -->
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-tag me-1"></i>Nome do Produto *
+                            </label>
+                            <input type="text" class="form-control" id="nome" required maxlength="200"
+                                   placeholder="Ex: Notebook Dell Inspiron">
+                        </div>
+
+                        <!-- Categoria -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-folder me-1"></i>Categoria
+                            </label>
+                            <select class="form-select" id="categoria">
+                                <option value="">Selecione</option>
+                                <option value="Eletrônicos">Eletrônicos</option>
+                                <option value="Periféricos">Periféricos</option>
+                                <option value="Componentes">Componentes</option>
+                                <option value="Acessórios">Acessórios</option>
+                            </select>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Descrição
+                            </label>
+                            <textarea class="form-control" id="descricao" rows="3" maxlength="1000"
+                                      placeholder="Descreva as características do produto"></textarea>
+                        </div>
+
+                        <!-- Preço -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>Preço (R$) *
+                            </label>
+                            <input type="number" class="form-control" id="preco" min="0.01" step="0.01" required
+                                   placeholder="0.00">
+                        </div>
+
+                        <!-- Estoque -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-boxes me-1"></i>Quantidade em Estoque *
+                            </label>
+                            <input type="number" class="form-control" id="quantidadeEstoque" min="0" step="1" required
+                                   placeholder="0">
+                        </div>
+
+                        <!-- Ativo -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-toggle-on me-1"></i>Status
+                            </label>
+                            <select class="form-select" id="ativo">
+                                <option value="true">Ativo</option>
+                                <option value="false">Inativo</option>
+                            </select>
+                        </div>
+
+                        <!-- URL da Imagem -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-image me-1"></i>URL da Imagem
+                            </label>
+                            <input type="text" class="form-control" id="imagemUrl" maxlength="500"
+                                   placeholder="https://exemplo.com/imagem.jpg">
+                            <small class="form-text text-muted">
+                                Cole o link de uma imagem da internet ou deixe em branco
+                            </small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnSalvar">
+                    <i class="fas fa-save me-1"></i>Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalProduto = new bootstrap.Modal(document.getElementById('modalProduto'));
+
+        $(document).ready(function() {
+            carregarProdutos();
+
+            // Evento: Novo Produto
+            $('#btnNovoProduto').click(function() {
+                abrirModalNovo();
+            });
+
+            // Evento: Salvar
+            $('#btnSalvar').click(function() {
+                salvarProduto();
+            });
+        });
+
+        // ============================================
+        // CARREGAR PRODUTOS
+        // ============================================
+        function carregarProdutos() {
+            $('#loading').show();
+            $('#tabelaProdutos tbody').empty();
+
+            $.ajax({
+                url: '/Produtos/ObterTodos',
+                type: 'GET',
+                success: function(response) {
+                    $('#loading').hide();
+
+                    if (response.sucesso && response.dados) {
+                        exibirProdutos(response.dados);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro!',
+                            text: 'Erro ao carregar produtos'
+                        });
+                    }
+                },
+                error: function() {
+                    $('#loading').hide();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: 'Erro ao carregar produtos'
+                    });
+                }
+            });
+        }
+
+        function exibirProdutos(produtos) {
+            let tbody = $('#tabelaProdutos tbody');
+            tbody.empty();
+
+            if (produtos.length === 0) {
+                tbody.append(`
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-3x mb-2"></i>
+                            <p>Nenhum produto cadastrado</p>
+                        </td>
+                    </tr>
+                `);
+                return;
+            }
+
+            produtos.forEach(function(produto) {
+                let statusBadge = produto.ativo
+                    ? '<span class="badge bg-success">Ativo</span>'
+                    : '<span class="badge bg-secondary">Inativo</span>';
+
+                let row = `
+                    <tr>
+                        <td>${produto.id}</td>
+                        <td><strong>${produto.nome}</strong></td>
+                        <td>${produto.categoria || '-'}</td>
+                        <td><strong class="text-primary">R$ ${produto.preco.toFixed(2)}</strong></td>
+                        <td>
+                            ${produto.quantidadeEstoque > 0
+                                ? `<span class="text-success">${produto.quantidadeEstoque}</span>`
+                                : `<span class="text-danger">0</span>`}
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-warning" onclick="editarProduto(${produto.id})" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deletarProduto(${produto.id})" title="Deletar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        // ============================================
+        // ABRIR MODAL - NOVO
+        // ============================================
+        function abrirModalNovo() {
+            $('#modalTitulo').html('<i class="fas fa-box me-2"></i>Novo Produto');
+            $('#formProduto')[0].reset();
+            $('#produtoId').val('0');
+            $('#ativo').val('true');
+            modalProduto.show();
+        }
+
+        // ============================================
+        // EDITAR PRODUTO
+        // ============================================
+        function editarProduto(id) {
+            $.ajax({
+                url: '/Produtos/ObterPorId?id=' + id,
+                type: 'GET',
+                success: function(produto) {
+                    if (!produto) {
+                        Swal.fire('Erro!', 'Produto não encontrado', 'error');
+                        return;
+                    }
+
+                    $('#modalTitulo').html('<i class="fas fa-edit me-2"></i>Editar Produto');
+                    $('#produtoId').val(produto.id);
+                    $('#nome').val(produto.nome);
+                    $('#descricao').val(produto.descricao || '');
+                    $('#preco').val(produto.preco);
+                    $('#quantidadeEstoque').val(produto.quantidadeEstoque);
+                    $('#categoria').val(produto.categoria || '');
+                    $('#imagemUrl').val(produto.imagemUrl || '');
+                    $('#ativo').val(produto.ativo.toString());
+
+                    modalProduto.show();
+                },
+                error: function() {
+                    Swal.fire('Erro!', 'Erro ao buscar produto', 'error');
+                }
+            });
+        }
+
+        // ============================================
+        // SALVAR PRODUTO (Criar ou Atualizar)
+        // ============================================
+        function salvarProduto() {
+            // Validações
+            if (!$('#nome').val().trim()) {
+                Swal.fire('Atenção!', 'O nome do produto é obrigatório', 'warning');
+                $('#nome').focus();
+                return;
+            }
+
+            if (!$('#preco').val() || parseFloat($('#preco').val()) <= 0) {
+                Swal.fire('Atenção!', 'Informe um preço válido', 'warning');
+                $('#preco').focus();
+                return;
+            }
+
+            if (!$('#quantidadeEstoque').val() || parseInt($('#quantidadeEstoque').val()) < 0) {
+                Swal.fire('Atenção!', 'Informe uma quantidade de estoque válida', 'warning');
+                $('#quantidadeEstoque').focus();
+                return;
+            }
+
+            let produtoId = parseInt($('#produtoId').val()) || 0;
+            let isEdicao = produtoId > 0;
+
+            let produto = {
+                id: produtoId,
+                nome: $('#nome').val().trim(),
+                descricao: $('#descricao').val().trim(),
+                preco: parseFloat($('#preco').val()),
+                quantidadeEstoque: parseInt($('#quantidadeEstoque').val()),
+                categoria: $('#categoria').val(),
+                imagemUrl: $('#imagemUrl').val().trim(),
+                ativo: $('#ativo').val() === 'true'
+            };
+
+            // Escolhe a URL e o método conforme o modo
+            let url = isEdicao ? '/Produtos/Atualizar' : '/Produtos/Criar';
+            let method = isEdicao ? 'PUT' : 'POST';
+
+            Swal.fire({
+                title: 'Salvando...',
+                text: 'Por favor aguarde',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: url,
+                type: method,
+                contentType: 'application/json',
+                data: JSON.stringify(produto),
+                success: function(response) {
+                    Swal.close();
+
+                    if (response.sucesso) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sucesso!',
+                            text: response.mensagem,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+
+                        modalProduto.hide();
+                        carregarProdutos();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro!',
+                            text: response.mensagem
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.close();
+
+                    let mensagem = 'Erro ao salvar produto';
+                    if (xhr.responseJSON && xhr.responseJSON.mensagem) {
+                        mensagem = xhr.responseJSON.mensagem;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: mensagem
+                    });
+                }
+            });
+        }
+
+        // ============================================
+        // DELETAR PRODUTO
+        // ============================================
+        function deletarProduto(id) {
+            Swal.fire({
+                title: 'Confirmar Exclusão',
+                text: 'Deseja realmente deletar este produto?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, deletar!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Produtos/Deletar?id=' + id,
+                        type: 'DELETE',
+                        success: function(response) {
+                            if (response.sucesso) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deletado!',
+                                    text: response.mensagem,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                carregarProdutos();
+                            } else {
+                                Swal.fire('Erro!', response.mensagem, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Erro!', 'Erro ao deletar produto', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

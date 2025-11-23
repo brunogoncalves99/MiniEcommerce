@@ -1,0 +1,342 @@
+@{
+    ViewData["Title"] = "Carrinho de Compras";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fas fa-shopping-cart me-2"></i>Carrinho de Compras</h2>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Itens do Carrinho -->
+        <div class="col-md-8">
+            <div id="carrinho-vazio" class="alert alert-info" style="display: none;">
+                <i class="fas fa-info-circle me-2"></i>
+                Seu carrinho está vazio. <a href="/Home/Index">Continuar comprando</a>
+            </div>
+
+            <div id="carrinho-itens">
+                <!-- Itens serão carregados aqui -->
+            </div>
+        </div>
+
+        <!-- Resumo do Pedido -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Resumo do Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Cupom de Desconto -->
+                    <div class="mb-3">
+                        <label class="form-label">Cupom de Desconto</label>
+                        <div class="input-group">
+                            <input type="text" id="codigoCupom" class="form-control" placeholder="Digite o código">
+                            <button class="btn btn-outline-primary" type="button" onclick="aplicarCupom()">
+                                Aplicar
+                            </button>
+                        </div>
+                        <small class="text-muted">Ex: BEMVINDO10</small>
+                    </div>
+
+                    <div id="cupom-aplicado" style="display: none;" class="alert alert-success small">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Cupom <strong id="cupom-codigo"></strong> aplicado!
+                    </div>
+
+                    <hr>
+
+                    <!-- Valores -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <strong id="valor-subtotal">R$ 0,00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-success">Desconto:</span>
+                        <strong class="text-success" id="valor-desconto">- R$ 0,00</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong class="text-primary fs-4" id="valor-total">R$ 0,00</strong>
+                    </div>
+
+                    <button class="btn btn-success w-100 mb-2" onclick="finalizarPedido()">
+                        <i class="fas fa-check me-2"></i>Finalizar Pedido
+                    </button>
+                    <a href="/Home/Index" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-left me-2"></i>Continuar Comprando
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let carrinho = null;
+
+    $(document).ready(function() {
+        carregarCarrinho();
+    });
+
+    function carregarCarrinho() {
+        $.ajax({
+            url: '/Carrinho/Obter',
+            type: 'GET',
+            success: function(response) {
+                if (response.sucesso && response.dados) {
+                    carrinho = response.dados;
+                    exibirCarrinho();
+                } else {
+                    mostrarCarrinhoVazio();
+                }
+            },
+            error: function() {
+                mostrarCarrinhoVazio();
+            }
+        });
+    }
+
+    function exibirCarrinho() {
+        if (!carrinho || !carrinho.itens || carrinho.itens.length === 0) {
+            mostrarCarrinhoVazio();
+            return;
+        }
+
+        $('#carrinho-vazio').hide();
+        var container = $('#carrinho-itens');
+        container.empty();
+
+        carrinho.itens.forEach(function(item) {
+            var itemHtml = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                <img src="${item.imagemUrl}" class="img-fluid rounded" alt="${item.nome}">
+                            </div>
+                            <div class="col-md-4">
+                                <h5>${item.nome}</h5>
+                                <p class="text-muted mb-0">R$ ${item.preco.toFixed(2)}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <button class="btn btn-outline-secondary" onclick="alterarQuantidade(${item.produtoId}, ${item.quantidade - 1})">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" class="form-control text-center" value="${item.quantidade}" readonly>
+                                    <button class="btn btn-outline-secondary" onclick="alterarQuantidade(${item.produtoId}, ${item.quantidade + 1})">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <strong>R$ ${item.valorTotal.toFixed(2)}</strong>
+                            </div>
+                            <div class="col-md-1 text-end">
+                                <button class="btn btn-danger btn-sm" onclick="removerItem(${item.produtoId})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.append(itemHtml);
+        });
+
+        atualizarResumo();
+    }
+
+    function mostrarCarrinhoVazio() {
+        $('#carrinho-vazio').show();
+        $('#carrinho-itens').empty();
+        atualizarResumo();
+    }
+
+    function atualizarResumo() {
+        if (!carrinho || !carrinho.itens || carrinho.itens.length === 0) {
+            $('#valor-subtotal').text('R$ 0,00');
+            $('#valor-desconto').text('- R$ 0,00');
+            $('#valor-total').text('R$ 0,00');
+            return;
+        }
+
+        $('#valor-subtotal').text('R$ ' + carrinho.valorSubtotal.toFixed(2));
+        $('#valor-desconto').text('- R$ ' + carrinho.valorDesconto.toFixed(2));
+        $('#valor-total').text('R$ ' + carrinho.valorTotal.toFixed(2));
+
+        if (carrinho.codigoCupom) {
+            $('#cupom-codigo').text(carrinho.codigoCupom);
+            $('#cupom-aplicado').show();
+        }
+    }
+
+    function alterarQuantidade(produtoId, novaQuantidade) {
+        if (novaQuantidade < 1) {
+            removerItem(produtoId);
+            return;
+        }
+
+        $.ajax({
+            url: '/Carrinho/AtualizarQuantidade',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                produtoId: produtoId,
+                quantidade: novaQuantidade
+            }),
+            success: function(response) {
+                if (response.sucesso) {
+                    carrinho = response.dados;
+                    exibirCarrinho();
+                    atualizarContadorCarrinho();
+                }
+            }
+        });
+    }
+
+    function removerItem(produtoId) {
+        Swal.fire({
+            title: 'Confirmar',
+            text: 'Deseja remover este item do carrinho?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, remover',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/Carrinho/Remover',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(produtoId),
+                    success: function(response) {
+                        if (response.sucesso) {
+                            carrinho = response.dados;
+                            exibirCarrinho();
+                            atualizarContadorCarrinho();
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Removido!',
+                                text: response.mensagem,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function aplicarCupom() {
+        var codigo = $('#codigoCupom').val().trim().toUpperCase();
+        
+        if (!codigo) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Digite um código de cupom'
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '/Pedidos/AplicarCupom',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(codigo),
+            success: function(response) {
+                if (response.sucesso) {
+                    carrinho = response.dados;
+                    exibirCarrinho();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sucesso!',
+                        text: response.mensagem
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: response.mensagem
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Erro ao aplicar cupom'
+                });
+            }
+        });
+    }
+
+    function finalizarPedido() {
+        if (!carrinho || !carrinho.itens || carrinho.itens.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Carrinho está vazio'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Confirmar Pedido',
+            html: `
+                <p>Você está prestes a finalizar seu pedido:</p>
+                <strong>Total: R$ ${carrinho.valorTotal.toFixed(2)}</strong>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/Pedidos/Criar',
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.sucesso) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Pedido Realizado!',
+                                html: `
+                                    <p>${response.mensagem}</p>
+                                    <p><strong>Número de Rastreio:</strong><br>${response.dados.numeroRastreio}</p>
+                                `,
+                                confirmButtonText: 'Ver Meus Pedidos'
+                            }).then(() => {
+                                window.location.href = '/Pedidos/MeusPedidos';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Erro!',
+                                text: response.mensagem
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro!',
+                            text: 'Erro ao finalizar pedido'
+                        });
+                    }
+                });
+            }
+        });
+    }
+</script>
+}

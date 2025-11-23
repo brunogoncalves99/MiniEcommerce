@@ -1,0 +1,502 @@
+@{
+    ViewData["Title"] = "Gerenciar Cupons";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-ticket-alt me-2"></i>Gerenciar Cupons de Desconto</h2>
+            <p class="text-muted mb-0">Crie e gerencie cupons de desconto para seus clientes</p>
+        </div>
+        <button class="btn btn-primary" id="btnNovoCupom">
+            <i class="fas fa-plus me-2"></i>Novo Cupom
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center my-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Carregando cupons...</p>
+    </div>
+
+    <!-- Tabela de Cupons -->
+    <div class="card shadow">
+        <div class="card-body">
+            <table class="table table-hover" id="tabelaCupons">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Desconto</th>
+                        <th>Valor Min.</th>
+                        <th>Valor Máx. Desc.</th>
+                        <th>Validade</th>
+                        <th>Usos</th>
+                        <th>Status</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Cupons serão carregados aqui -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cupom -->
+<div class="modal fade" id="modalCupom" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitulo">
+                    <i class="fas fa-ticket-alt me-2"></i>Novo Cupom
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="formCupom">
+                    <input type="hidden" id="cupomId" value="0">
+
+                    <div class="row">
+                        <!-- Código -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-barcode me-1"></i>Código do Cupom *
+                            </label>
+                            <input type="text" class="form-control text-uppercase" id="codigo" required maxlength="50"
+                                   placeholder="Ex: BEMVINDO10" style="text-transform: uppercase;">
+                            <small class="form-text text-muted">Será convertido automaticamente para maiúsculas</small>
+                        </div>
+
+                        <!-- Percentual Desconto -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-percent me-1"></i>Percentual de Desconto (%) *
+                            </label>
+                            <input type="number" class="form-control" id="percentualDesconto" min="0.01" max="100" step="0.01" required
+                                   placeholder="Ex: 10.00">
+                            <small class="form-text text-muted">De 0.01% até 100%</small>
+                        </div>
+
+                        <!-- Valor Mínimo da Compra -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>Valor Mínimo da Compra (R$)
+                            </label>
+                            <input type="number" class="form-control" id="valorMinimoCompra" min="0" step="0.01"
+                                   placeholder="Ex: 100.00">
+                            <small class="form-text text-muted">Deixe 0 ou vazio para não ter mínimo</small>
+                        </div>
+
+                        <!-- Valor Máximo do Desconto -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-hand-holding-usd me-1"></i>Valor Máximo do Desconto (R$)
+                            </label>
+                            <input type="number" class="form-control" id="valorMaximoDesconto" min="0" step="0.01"
+                                   placeholder="Ex: 50.00">
+                            <small class="form-text text-muted">Deixe 0 ou vazio para ilimitado</small>
+                        </div>
+
+                        <!-- Data de Validade -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-alt me-1"></i>Data de Validade *
+                            </label>
+                            <input type="date" class="form-control" id="dataValidade" required>
+                            <small class="form-text text-muted">Cupom será válido até esta data</small>
+                        </div>
+
+                        <!-- Quantidade Máxima de Uso -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-sort-numeric-up me-1"></i>Quantidade Máxima de Uso
+                            </label>
+                            <input type="number" class="form-control" id="quantidadeMaximaUso" min="0" step="1"
+                                   placeholder="Ex: 100">
+                            <small class="form-text text-muted">Deixe 0 ou vazio para ilimitado</small>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-toggle-on me-1"></i>Status
+                            </label>
+                            <select class="form-select" id="ativo">
+                                <option value="true">Ativo</option>
+                                <option value="false">Inativo</option>
+                            </select>
+                        </div>
+
+                        <!-- Quantidade Usada (somente edição) -->
+                        <div class="col-md-6 mb-3" id="divQuantidadeUsada" style="display: none;">
+                            <label class="form-label">
+                                <i class="fas fa-chart-line me-1"></i>Quantidade Já Usada
+                            </label>
+                            <input type="number" class="form-control" id="quantidadeUsada" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Exemplo de Cálculo -->
+                    <div class="alert alert-info mt-3">
+                        <strong><i class="fas fa-calculator me-1"></i> Exemplo de Cálculo:</strong>
+                        <p class="mb-0" id="exemploCalculo">Preencha os campos para ver um exemplo</p>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnSalvar">
+                    <i class="fas fa-save me-1"></i>Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalCupom = new bootstrap.Modal(document.getElementById('modalCupom'));
+
+        $(document).ready(function() {
+            carregarCupons();
+
+            // Evento: Novo Cupom
+            $('#btnNovoCupom').click(function() {
+                abrirModalNovo();
+            });
+
+            // Evento: Salvar
+            $('#btnSalvar').click(function() {
+                salvarCupom();
+            });
+
+            // Evento: Calcular exemplo em tempo real
+            $('#percentualDesconto, #valorMinimoCompra, #valorMaximoDesconto').on('input', function() {
+                calcularExemplo();
+            });
+
+            // Converter código para maiúsculas
+            $('#codigo').on('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+        });
+
+        // ============================================
+        // CARREGAR CUPONS
+        // ============================================
+        function carregarCupons() {
+            $('#loading').show();
+            $('#tabelaCupons tbody').empty();
+
+            $.ajax({
+                url: '/Cupom/Listar',
+                type: 'GET',
+                success: function(cupons) {
+                    $('#loading').hide();
+                    exibirCupons(cupons);
+                },
+                error: function() {
+                    $('#loading').hide();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: 'Erro ao carregar cupons'
+                    });
+                }
+            });
+        }
+
+        function exibirCupons(cupons) {
+            let tbody = $('#tabelaCupons tbody');
+            tbody.empty();
+
+            if (cupons.length === 0) {
+                tbody.append(`
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">
+                            <i class="fas fa-ticket-alt fa-3x mb-2"></i>
+                            <p>Nenhum cupom cadastrado</p>
+                        </td>
+                    </tr>
+                `);
+                return;
+            }
+
+            cupons.forEach(function(cupom) {
+                let dataValidade = new Date(cupom.dataValidade).toLocaleDateString('pt-BR');
+                let hoje = new Date();
+                let validade = new Date(cupom.dataValidade);
+                let expirado = validade < hoje;
+
+                let statusBadge = '';
+                if (!cupom.ativo) {
+                    statusBadge = '<span class="badge bg-secondary">Inativo</span>';
+                } else if (expirado) {
+                    statusBadge = '<span class="badge bg-danger">Expirado</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-success">Ativo</span>';
+                }
+
+                let usos = cupom.quantidadeMaximaUso
+                    ? `${cupom.quantidadeUsada}/${cupom.quantidadeMaximaUso}`
+                    : `${cupom.quantidadeUsada}/∞`;
+
+                let row = `
+                    <tr>
+                        <td>${cupom.id}</td>
+                        <td><strong class="text-primary">${cupom.codigo}</strong></td>
+                        <td><span class="badge bg-warning text-dark">${cupom.percentualDesconto.toFixed(2)}%</span></td>
+                        <td>${cupom.valorMinimoCompra ? 'R$ ' + cupom.valorMinimoCompra.toFixed(2) : '-'}</td>
+                        <td>${cupom.valorMaximoDesconto ? 'R$ ' + cupom.valorMaximoDesconto.toFixed(2) : '∞'}</td>
+                        <td>${dataValidade}</td>
+                        <td>${usos}</td>
+                        <td>${statusBadge}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-warning" onclick="editarCupom(${cupom.id})" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deletarCupom(${cupom.id})" title="Deletar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        // ============================================
+        // ABRIR MODAL - NOVO
+        // ============================================
+        function abrirModalNovo() {
+            $('#modalTitulo').html('<i class="fas fa-ticket-alt me-2"></i>Novo Cupom');
+            $('#formCupom')[0].reset();
+            $('#cupomId').val('0');
+            $('#ativo').val('true');
+            $('#divQuantidadeUsada').hide();
+
+            // Data padrão: 30 dias a partir de hoje
+            let dataFutura = new Date();
+            dataFutura.setDate(dataFutura.getDate() + 30);
+            $('#dataValidade').val(dataFutura.toISOString().split('T')[0]);
+
+            calcularExemplo();
+            modalCupom.show();
+        }
+
+        // ============================================
+        // EDITAR CUPOM
+        // ============================================
+        function editarCupom(id) {
+            $.ajax({
+                url: '/Cupom/Buscar?id=' + id,
+                type: 'GET',
+                success: function(cupom) {
+                    if (!cupom) {
+                        Swal.fire('Erro!', 'Cupom não encontrado', 'error');
+                        return;
+                    }
+
+                    $('#modalTitulo').html('<i class="fas fa-edit me-2"></i>Editar Cupom');
+                    $('#cupomId').val(cupom.id);
+                    $('#codigo').val(cupom.codigo);
+                    $('#percentualDesconto').val(cupom.percentualDesconto);
+                    $('#valorMinimoCompra').val(cupom.valorMinimoCompra || '');
+                    $('#valorMaximoDesconto').val(cupom.valorMaximoDesconto || '');
+
+                    // Converter data para formato yyyy-MM-dd
+                    let data = new Date(cupom.dataValidade);
+                    $('#dataValidade').val(data.toISOString().split('T')[0]);
+
+                    $('#quantidadeMaximaUso').val(cupom.quantidadeMaximaUso || '');
+                    $('#quantidadeUsada').val(cupom.quantidadeUsada);
+                    $('#ativo').val(cupom.ativo.toString());
+
+                    $('#divQuantidadeUsada').show();
+                    calcularExemplo();
+                    modalCupom.show();
+                },
+                error: function() {
+                    Swal.fire('Erro!', 'Erro ao buscar cupom', 'error');
+                }
+            });
+        }
+
+        // ============================================
+        // SALVAR CUPOM (Criar ou Atualizar)
+        // ============================================
+        function salvarCupom() {
+            // Validações
+            if (!$('#codigo').val().trim()) {
+                Swal.fire('Atenção!', 'O código do cupom é obrigatório', 'warning');
+                $('#codigo').focus();
+                return;
+            }
+
+            let percentual = parseFloat($('#percentualDesconto').val());
+            if (!percentual || percentual <= 0 || percentual > 100) {
+                Swal.fire('Atenção!', 'Informe um percentual de desconto entre 0.01 e 100', 'warning');
+                $('#percentualDesconto').focus();
+                return;
+            }
+
+            if (!$('#dataValidade').val()) {
+                Swal.fire('Atenção!', 'A data de validade é obrigatória', 'warning');
+                $('#dataValidade').focus();
+                return;
+            }
+
+            let cupomId = parseInt($('#cupomId').val()) || 0;
+
+            let cupom = {
+                id: cupomId,
+                codigo: $('#codigo').val().trim().toUpperCase(),
+                percentualDesconto: parseFloat($('#percentualDesconto').val()),
+                valorMinimoCompra: $('#valorMinimoCompra').val() ? parseFloat($('#valorMinimoCompra').val()) : null,
+                valorMaximoDesconto: $('#valorMaximoDesconto').val() ? parseFloat($('#valorMaximoDesconto').val()) : null,
+                dataValidade: $('#dataValidade').val() + 'T23:59:59',
+                quantidadeMaximaUso: $('#quantidadeMaximaUso').val() ? parseInt($('#quantidadeMaximaUso').val()) : null,
+                quantidadeUsada: cupomId > 0 ? parseInt($('#quantidadeUsada').val()) : 0,
+                ativo: $('#ativo').val() === 'true'
+            };
+
+            Swal.fire({
+                title: 'Salvando...',
+                text: 'Por favor aguarde',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '/Cupom/Salvar',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(cupom),
+                success: function(response) {
+                    Swal.close();
+
+                    if (response.sucesso) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sucesso!',
+                            text: response.mensagem,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+
+                        modalCupom.hide();
+                        carregarCupons();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro!',
+                            text: response.mensagem
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.close();
+
+                    let mensagem = 'Erro ao salvar cupom';
+                    if (xhr.responseJSON && xhr.responseJSON.mensagem) {
+                        mensagem = xhr.responseJSON.mensagem;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: mensagem
+                    });
+                }
+            });
+        }
+
+        // ============================================
+        // DELETAR CUPOM
+        // ============================================
+        function deletarCupom(id) {
+            Swal.fire({
+                title: 'Confirmar Exclusão',
+                text: 'Deseja realmente deletar este cupom?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, deletar!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Cupom/Excluir?id=' + id,
+                        type: 'DELETE',
+                        success: function(response) {
+                            if (response.sucesso) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deletado!',
+                                    text: response.mensagem,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                carregarCupons();
+                            } else {
+                                Swal.fire('Erro!', response.mensagem, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Erro!', 'Erro ao deletar cupom', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        // ============================================
+        // CALCULAR EXEMPLO
+        // ============================================
+        function calcularExemplo() {
+            let percentual = parseFloat($('#percentualDesconto').val()) || 0;
+            let minimo = parseFloat($('#valorMinimoCompra').val()) || 0;
+            let maxDesconto = parseFloat($('#valorMaximoDesconto').val()) || 0;
+
+            if (percentual <= 0) {
+                $('#exemploCalculo').html('Preencha o percentual de desconto para ver um exemplo');
+                return;
+            }
+
+            // Exemplo com valor de R$ 500
+            let valorCompra = minimo > 0 ? minimo : 500;
+            let desconto = valorCompra * (percentual / 100);
+
+            if (maxDesconto > 0 && desconto > maxDesconto) {
+                desconto = maxDesconto;
+            }
+
+            let valorFinal = valorCompra - desconto;
+
+            let exemplo = `
+                <strong>Compra de R$ ${valorCompra.toFixed(2)}</strong><br>
+                Desconto de ${percentual}%: <strong class="text-success">- R$ ${desconto.toFixed(2)}</strong><br>
+                Valor Final: <strong class="text-primary">R$ ${valorFinal.toFixed(2)}</strong>
+            `;
+
+            if (minimo > 0) {
+                exemplo += `<br><small class="text-muted">* Válido apenas para compras acima de R$ ${minimo.toFixed(2)}</small>`;
+            }
+
+            if (maxDesconto > 0) {
+                exemplo += `<br><small class="text-muted">* Desconto máximo de R$ ${maxDesconto.toFixed(2)}</small>`;
+            }
+
+            $('#exemploCalculo').html(exemplo);
+        }
+    </script>
+}
