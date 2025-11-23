@@ -13,13 +13,11 @@
         </button>
     </div>
 
-    <!-- Loading -->
     <div id="loading" class="text-center my-5" style="display: none;">
         <div class="spinner-border text-primary" role="status"></div>
         <p class="mt-2">Carregando cupons...</p>
     </div>
 
-    <!-- Tabela de Cupons -->
     <div class="card shadow">
         <div class="card-body">
             <table class="table table-hover" id="tabelaCupons">
@@ -37,7 +35,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Cupons serão carregados aqui -->
                 </tbody>
             </table>
         </div>
@@ -60,7 +57,6 @@
                     <input type="hidden" id="cupomId" value="0">
 
                     <div class="row">
-                        <!-- Código -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">
                                 <i class="fas fa-barcode me-1"></i>Código do Cupom *
@@ -70,7 +66,6 @@
                             <small class="form-text text-muted">Será convertido automaticamente para maiúsculas</small>
                         </div>
 
-                        <!-- Percentual Desconto -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">
                                 <i class="fas fa-percent me-1"></i>Percentual de Desconto (%) *
@@ -80,7 +75,6 @@
                             <small class="form-text text-muted">De 0.01% até 100%</small>
                         </div>
 
-                        <!-- Valor Mínimo da Compra -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">
                                 <i class="fas fa-dollar-sign me-1"></i>Valor Mínimo da Compra (R$)
@@ -90,7 +84,6 @@
                             <small class="form-text text-muted">Deixe 0 ou vazio para não ter mínimo</small>
                         </div>
 
-                        <!-- Valor Máximo do Desconto -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">
                                 <i class="fas fa-hand-holding-usd me-1"></i>Valor Máximo do Desconto (R$)
@@ -100,7 +93,6 @@
                             <small class="form-text text-muted">Deixe 0 ou vazio para ilimitado</small>
                         </div>
 
-                        <!-- Data de Validade -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">
                                 <i class="fas fa-calendar-alt me-1"></i>Data de Validade *
@@ -109,7 +101,6 @@
                             <small class="form-text text-muted">Cupom será válido até esta data</small>
                         </div>
 
-                        <!-- Quantidade Máxima de Uso -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">
                                 <i class="fas fa-sort-numeric-up me-1"></i>Quantidade Máxima de Uso
@@ -119,7 +110,6 @@
                             <small class="form-text text-muted">Deixe 0 ou vazio para ilimitado</small>
                         </div>
 
-                        <!-- Status -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">
                                 <i class="fas fa-toggle-on me-1"></i>Status
@@ -130,7 +120,6 @@
                             </select>
                         </div>
 
-                        <!-- Quantidade Usada (somente edição) -->
                         <div class="col-md-6 mb-3" id="divQuantidadeUsada" style="display: none;">
                             <label class="form-label">
                                 <i class="fas fa-chart-line me-1"></i>Quantidade Já Usada
@@ -139,7 +128,6 @@
                         </div>
                     </div>
 
-                    <!-- Exemplo de Cálculo -->
                     <div class="alert alert-info mt-3">
                         <strong><i class="fas fa-calculator me-1"></i> Exemplo de Cálculo:</strong>
                         <p class="mb-0" id="exemploCalculo">Preencha os campos para ver um exemplo</p>
@@ -166,30 +154,24 @@
         $(document).ready(function() {
             carregarCupons();
 
-            // Evento: Novo Cupom
             $('#btnNovoCupom').click(function() {
                 abrirModalNovo();
             });
 
-            // Evento: Salvar
             $('#btnSalvar').click(function() {
                 salvarCupom();
             });
 
-            // Evento: Calcular exemplo em tempo real
             $('#percentualDesconto, #valorMinimoCompra, #valorMaximoDesconto').on('input', function() {
                 calcularExemplo();
             });
 
-            // Converter código para maiúsculas
             $('#codigo').on('input', function() {
                 this.value = this.value.toUpperCase();
             });
         });
 
-        // ============================================
-        // CARREGAR CUPONS
-        // ============================================
+
         function carregarCupons() {
             $('#loading').show();
             $('#tabelaCupons tbody').empty();
@@ -271,9 +253,7 @@
             });
         }
 
-        // ============================================
-        // ABRIR MODAL - NOVO
-        // ============================================
+
         function abrirModalNovo() {
             $('#modalTitulo').html('<i class="fas fa-ticket-alt me-2"></i>Novo Cupom');
             $('#formCupom')[0].reset();
@@ -290,9 +270,7 @@
             modalCupom.show();
         }
 
-        // ============================================
-        // EDITAR CUPOM
-        // ============================================
+
         function editarCupom(id) {
             $.ajax({
                 url: '/Cupom/Buscar?id=' + id,
@@ -328,9 +306,7 @@
             });
         }
 
-        // ============================================
-        // SALVAR CUPOM (Criar ou Atualizar)
-        // ============================================
+
         function salvarCupom() {
             // Validações
             if (!$('#codigo').val().trim()) {
@@ -419,9 +395,7 @@
             });
         }
 
-        // ============================================
-        // DELETAR CUPOM
-        // ============================================
+
         function deletarCupom(id) {
             Swal.fire({
                 title: 'Confirmar Exclusão',
@@ -459,9 +433,7 @@
             });
         }
 
-        // ============================================
-        // CALCULAR EXEMPLO
-        // ============================================
+
         function calcularExemplo() {
             let percentual = parseFloat($('#percentualDesconto').val()) || 0;
             let minimo = parseFloat($('#valorMinimoCompra').val()) || 0;

@@ -20,6 +20,25 @@ namespace MiniEcommerce.Api.Controllers
             return View();
         }
 
+        [HttpGet]
+
+        public async Task<IActionResult> ListarUsuarios()
+        {
+            var usuarios = await _servicoUsuario.ObterTodosAsync();
+            return Json(usuarios);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> BuscarUsuario(int id)
+        {
+            var usuario = await _servicoUsuario.ObterPorIdAsync(id);
+
+            if (usuario == null)
+                return NotFound(new { mensagem = "Usuario não encontrado" });
+
+            return Json(usuario);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Cadastrar([FromBody] CadastroViewModel model)
         {

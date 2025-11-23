@@ -1,8 +1,3 @@
-/* ==================================
-   MiniEcommerce - Global JavaScript
-   ================================== */
-
-// Função para formatar valor em moeda brasileira
 function formatarMoeda(valor) {
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -10,7 +5,6 @@ function formatarMoeda(valor) {
     }).format(valor);
 }
 
-// Função para formatar data
 function formatarData(data) {
     return new Date(data).toLocaleDateString('pt-BR', {
         day: '2-digit',
@@ -19,18 +13,15 @@ function formatarData(data) {
     });
 }
 
-// Função para formatar CPF
 function formatarCPF(cpf) {
     cpf = cpf.replace(/\D/g, '');
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
 
-// Função para remover formatação de CPF
 function limparCPF(cpf) {
     return cpf.replace(/\D/g, '');
 }
 
-// Função para validar CPF
 function validarCPF(cpf) {
     cpf = limparCPF(cpf);
     
@@ -60,7 +51,6 @@ function validarCPF(cpf) {
     return parseInt(cpf.charAt(10)) === digito2;
 }
 
-// Função para exibir mensagem de sucesso
 function mostrarSucesso(mensagem, titulo = 'Sucesso!') {
     Swal.fire({
         icon: 'success',
@@ -71,7 +61,6 @@ function mostrarSucesso(mensagem, titulo = 'Sucesso!') {
     });
 }
 
-// Função para exibir mensagem de erro
 function mostrarErro(mensagem, titulo = 'Erro!') {
     Swal.fire({
         icon: 'error',
@@ -80,7 +69,6 @@ function mostrarErro(mensagem, titulo = 'Erro!') {
     });
 }
 
-// Função para exibir mensagem de confirmação
 function confirmar(mensagem, titulo = 'Confirmar') {
     return Swal.fire({
         title: titulo,
@@ -94,7 +82,6 @@ function confirmar(mensagem, titulo = 'Confirmar') {
     });
 }
 
-// Função para exibir loading
 function mostrarLoading(mensagem = 'Carregando...') {
     Swal.fire({
         title: mensagem,
@@ -106,12 +93,10 @@ function mostrarLoading(mensagem = 'Carregando...') {
     });
 }
 
-// Função para fechar loading
 function fecharLoading() {
     Swal.close();
 }
 
-// Função para atualizar contador do carrinho
 function atualizarContadorCarrinho() {
     $.ajax({
         url: '/Carrinho/Obter',
@@ -136,13 +121,11 @@ function atualizarContadorCarrinho() {
     });
 }
 
-// Função para verificar se usuário está logado
 function verificarLogin() {
     var usuario = sessionStorage.getItem('usuario');
     return usuario !== null;
 }
 
-// Função para obter dados do usuário da sessão
 function obterUsuario() {
     var usuarioJson = sessionStorage.getItem('usuario');
     if (usuarioJson) {
@@ -151,7 +134,6 @@ function obterUsuario() {
     return null;
 }
 
-// Função para fazer logout
 function logout() {
     confirmar('Deseja realmente sair?', 'Logout').then((result) => {
         if (result.isConfirmed) {
@@ -173,7 +155,6 @@ function logout() {
     });
 }
 
-// Função para tratar erros de AJAX globalmente
 $(document).ajaxError(function(event, jqxhr, settings, thrownError) {
     if (jqxhr.status === 401) {
         mostrarErro('Sessão expirada. Faça login novamente.');
@@ -187,7 +168,6 @@ $(document).ajaxError(function(event, jqxhr, settings, thrownError) {
     }
 });
 
-// Inicialização quando o documento estiver pronto
 $(document).ready(function() {
     // Adicionar classe fade-in aos cards
     $('.card').addClass('fade-in');
@@ -203,7 +183,6 @@ $(document).ready(function() {
         atualizarContadorCarrinho();
     }
     
-    // Máscara de CPF em campos com classe 'cpf-mask'
     $('.cpf-mask').on('input', function() {
         var valor = $(this).val().replace(/\D/g, '');
         $(this).val(valor);
@@ -213,14 +192,12 @@ $(document).ready(function() {
         }
     });
     
-    // Máscara de moeda em campos com classe 'money-mask'
     $('.money-mask').on('input', function() {
         var valor = $(this).val().replace(/\D/g, '');
         valor = (valor / 100).toFixed(2);
         $(this).val('R$ ' + valor.replace('.', ','));
     });
     
-    // Confirmação antes de deletar
     $('.btn-delete').on('click', function(e) {
         e.preventDefault();
         var url = $(this).attr('href') || $(this).data('url');
@@ -243,7 +220,6 @@ $(document).ready(function() {
     });
 });
 
-// Função para copiar texto para clipboard
 function copiarParaClipboard(texto) {
     navigator.clipboard.writeText(texto).then(function() {
         mostrarSucesso('Copiado para a área de transferência!', '');
@@ -252,14 +228,12 @@ function copiarParaClipboard(texto) {
     });
 }
 
-// Função para rolar suavemente até um elemento
 function rolarPara(elemento) {
     $('html, body').animate({
         scrollTop: $(elemento).offset().top - 100
     }, 500);
 }
 
-// Função para debounce (útil para busca em tempo real)
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -272,7 +246,6 @@ function debounce(func, wait) {
     };
 }
 
-// Prevenir múltiplos cliques em botões
 $('.btn').on('click', function() {
     var btn = $(this);
     if (btn.hasClass('btn-loading')) {
@@ -280,16 +253,10 @@ $('.btn').on('click', function() {
     }
 });
 
-// Função para criar imagem placeholder
 function imagemPlaceholder(texto = 'Sem Imagem') {
     return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23ddd' width='200' height='200'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='20' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E${texto}%3C/text%3E%3C/svg%3E`;
 }
 
-// Tratar imagens quebradas
 $('img').on('error', function() {
     $(this).attr('src', imagemPlaceholder('Imagem não encontrada'));
 });
-
-// Console personalizado
-console.log('%c🛒 MiniEcommerce', 'color: #667eea; font-size: 20px; font-weight: bold;');
-console.log('%cSistema carregado com sucesso!', 'color: #28a745; font-size: 14px;');
