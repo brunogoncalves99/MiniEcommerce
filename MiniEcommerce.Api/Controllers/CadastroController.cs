@@ -15,7 +15,7 @@ namespace MiniEcommerce.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Usuarios()
         {
             return View();
         }
@@ -31,57 +31,77 @@ namespace MiniEcommerce.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> BuscarUsuario(int id)
         {
-            var usuario = await _servicoUsuario.ObterPorIdAsync(id);
+            var usuarios = await _servicoUsuario.ObterPorIdAsync(id);
 
-            if (usuario == null)
+            if (usuarios == null)
                 return NotFound(new { mensagem = "Usuario não encontrado" });
 
-            return Json(usuario);
+            return Json(usuarios);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Cadastrar([FromBody] CadastroViewModel model)
+        public async Task<IActionResult> Cadastrar([FromBody] UsuarioDTO usuario)
         {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { sucesso = false, mensagem = "Dados inválidos" });
+            }
+
             try
             {
-                if (!ModelState.IsValid)
+                // Verificar se existe o usuario, caso não exista cria um novo usuario
+
+                if(usuario.Id == 0)
                 {
-                    return Json(new { sucesso = false, mensagem = "Dados inválidos" });
+                    await _servicoUsuario.CriarAsync(usuario);
+
+                    return Json(new
+                    {
+                        sucesso = true,
+                        mensagem = "Usuário cadastrado com sucesso!"
+                    });
                 }
-
-                var usuarioDto = new UsuarioDTO
+                else
                 {
-                    Nome = model.Nome,
-                    Cpf = model.Cpf,
-                    Email = model.Email,
-                    Senha = model.Senha,
-                    Perfil = model.IsAdmin ? PerfilUsuario.Administrador : PerfilUsuario.Comprador,
-                    Ativo = true
-                };
+                    await _servicoUsuario.AtualizarAsync(usuario);
 
-                await _servicoUsuario.CriarAsync(usuarioDto);
-
-                return Json(new { 
-                    sucesso = true, 
-                    mensagem = "Usuário cadastrado com sucesso!" 
-                });
+                    return Ok(new
+                    {
+                        sucesso = true,
+                        mensagem = "Usuário atualizado com sucesso!"
+                    });
+                }
             }
             catch (Exception ex)
             {
-                return Json(new { 
-                    sucesso = false, 
-                    mensagem = ex.Message 
+                return Json(new {
+                    sucesso = false,
+                    mensagem = "Erro ao criar usuário: " + ex.Message
                 });
             }
         }
-    }
 
-    public class CadastroViewModel
-    {
-        public string Nome { get; set; }
-        public string Cpf { get; set; }
-        public string Email { get; set; }
-        public string Senha { get; set; }
-        public bool IsAdmin { get; set; }
+        [HttpPost]
+        public async Task<IActionResult> Deletar(int id)
+        {
+            try
+            {
+                await _servicoUsuario.DeletarAsync(id);
+
+                return Ok(new
+                {
+                    sucesso = true,
+                    mensagem = "Usuario deletado com sucesso!"
+                });
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(new
+                {
+                    sucesso = false,
+                    mensagem = "Erro ao excluir usuario" + ex.Message
+                });
+            }
+        }
     }
 }
