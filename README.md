@@ -17,8 +17,6 @@ Sistema completo de e-commerce desenvolvido em **ASP.NET Core MVC** com **Entity
 - [Arquitetura](#-arquitetura)
 - [Pré-requisitos](#-pré-requisitos)
 - [Instalação](#-instalação)
-- [Configuração](#-configuração)
-- [Como Usar](#-como-usar)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Capturas de Tela](#-capturas-de-tela)
 - [Contribuindo](#-contribuindo)
@@ -250,20 +248,6 @@ O projeto estará disponível em:
 
 ---
 
-## ⚙️ Configuração
-
-### Credenciais Padrão
-
-Após executar o script de seed, você terá os seguintes usuários:
-
-**Administrador:**
-- **CPF**: `12345678901`
-- **Senha**: `admin123`
-
-**Comprador:**
-- **CPF**: `98765432100`
-- **Senha**: `comprador123`
-
 ### Estrutura do Banco de Dados
 
 O banco possui as seguintes tabelas:
@@ -287,28 +271,6 @@ Para aplicar migrações:
 ```bash
 dotnet ef database update --project MiniEcommerce.Api
 ```
-
----
-
-## 📖 Como Usar
-
-### Para Compradores
-
-1. **Acesse** `https://localhost:7000`
-2. **Faça login** ou **crie uma conta**
-3. **Navegue** pelo catálogo de produtos
-4. **Adicione produtos** ao carrinho
-5. **(Opcional)** Aplique um **cupom de desconto**
-6. **Finalize** a compra
-
-### Para Administradores
-
-1. **Faça login** com credenciais de admin
-2. **Acesse o menu** de administração
-3. **Gerencie**:
-   - Produtos (criar, editar, deletar)
-   - Cupons (criar, editar, deletar)
-   - Pedidos (visualizar, atualizar status)
 
 ---
 
@@ -396,8 +358,6 @@ MiniEcommerce/
 │   ├── Program.cs
 │   └── appsettings.json
 │
-└── Database/
-    └── SeedData.sql                   # Script de dados iniciais
 ```
 
 ---
@@ -415,6 +375,14 @@ CRUD completo de produtos com modal para criação/edição, controle de estoque
 
 ### Gerenciamento de Cupons (Admin)
 Sistema de cupons com cálculo em tempo real de desconto, validação de datas e limite de usos.
+
+<img width="1895" height="1018" alt="MiniEcommerce1" src="https://github.com/user-attachments/assets/1ef73512-80bf-41c4-9b6b-d239596babb2" />
+<img width="1893" height="1026" alt="MiniEcommerce2" src="https://github.com/user-attachments/assets/92d6f5ab-29cd-424e-830b-b46b13d283cd" />
+<img width="1926" height="913" alt="MiniEcommerce3" src="https://github.com/user-attachments/assets/7ef4e301-ed70-46e4-980d-198a75b37eae" />
+<img width="1916" height="920" alt="MiniEcommerce4" src="https://github.com/user-attachments/assets/b5f1cf02-055b-46cf-83fd-e715fa2f327f" />
+<img width="1886" height="914" alt="MiniEcommerce5" src="https://github.com/user-attachments/assets/1a95b2d6-e9ab-41af-accb-3c6a8eacce20" />
+<img width="1915" height="909" alt="MiniEcommerce7" src="https://github.com/user-attachments/assets/eaaf0ba8-5bcd-4c32-ba5f-9a7f716d61a0" />
+
 
 ---
 
@@ -446,40 +414,9 @@ Sistema de cupons com cálculo em tempo real de desconto, validação de datas e
 
 ---
 
-## 🚧 Roadmap
-
-Funcionalidades planejadas:
-
-- [ ] Sistema de avaliações de produtos
-- [ ] Filtros avançados no catálogo
-- [ ] Integração com gateway de pagamento
-- [ ] Sistema de notificações por email
-- [ ] Painel de analytics para admin
-- [ ] API REST documentada (Swagger)
-- [ ] Testes unitários e de integração
-- [ ] Deploy em nuvem (Azure/AWS)
-
----
-
 ## 🤝 Contribuindo
 
 Contribuições são bem-vindas! Siga os passos:
-
-1. **Fork** o projeto
-2. Crie uma **branch** para sua feature (`git checkout -b feature/MinhaFeature`)
-3. **Commit** suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
-4. **Push** para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um **Pull Request**
-
-### Padrões de Código
-
-- Use **PascalCase** para classes e métodos
-- Use **camelCase** para variáveis locais
-- Adicione **comentários** em código complexo
-- Siga os princípios **SOLID**
-- Escreva **testes** para novas funcionalidades
-
----
 
 ## 📄 Licença
 
