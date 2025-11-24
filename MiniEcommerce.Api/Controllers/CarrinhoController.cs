@@ -14,6 +14,7 @@ namespace MiniEcommerce.Api.Controllers
             return View();
         }
 
+        #region Adicionar itens no carrinho
         [HttpPost]
         public IActionResult Adicionar([FromBody] ItemCarrinhoDTO item)
         {
@@ -42,6 +43,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
+
+        #region Remover itens do carrinho
 
         [HttpPost]
         public IActionResult Remover([FromBody] int produtoId)
@@ -65,6 +69,10 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+
+        #endregion
+
+        #region Atualizar quantidade de produtos
 
         [HttpPost]
         public IActionResult AtualizarQuantidade([FromBody] dynamic dados)
@@ -91,6 +99,8 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+
+        #endregion
 
         [HttpGet]
         public IActionResult Obter()

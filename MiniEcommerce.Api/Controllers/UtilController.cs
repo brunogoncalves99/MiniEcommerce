@@ -12,7 +12,6 @@ namespace MiniEcommerce.Api.Controllers
             _servicoProduto = servicoProduto;
         }
 
-        // Acesse: /Util/CorrigirImagensProdutos
         [HttpGet]
         public async Task<IActionResult> CorrigirImagensProdutos()
         {
@@ -23,19 +22,15 @@ namespace MiniEcommerce.Api.Controllers
 
                 foreach (var produto in produtos)
                 {
-                    // Se a imagem tem caminho absoluto (começa com C:\ ou D:\)
                     if (!string.IsNullOrEmpty(produto.ImagemUrl) && 
                         (produto.ImagemUrl.StartsWith("C:\\") || 
                          produto.ImagemUrl.StartsWith("D:\\") ||
                          produto.ImagemUrl.StartsWith("E:\\")))
                     {
-                        // Pega apenas o nome do arquivo
                         var nomeArquivo = Path.GetFileName(produto.ImagemUrl);
                         
-                        // Cria o caminho relativo
                         produto.ImagemUrl = $"/imagens/{nomeArquivo}";
                         
-                        // Atualiza no banco
                         await _servicoProduto.AtualizarAsync(produto);
                         corrigidos++;
                     }

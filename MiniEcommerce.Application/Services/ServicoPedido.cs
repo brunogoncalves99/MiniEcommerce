@@ -98,10 +98,9 @@ namespace MiniEcommerce.Application.Services
                     ProdutoId = produto.Id,
                     Produto = produto,
                     Quantidade = item.Quantidade,
-                    ValorUnitario = produto.Preco
+                    ValorUnitario = produto.Preco,
+                    ValorTotal = carrinho.ValorSubtotal - carrinho.ValorDesconto
                 };
-                itemPedido.CalcularValorTotal();
-
                 pedido.AdicionarItem(itemPedido);
                 
                 // Baixar estoque
@@ -123,7 +122,9 @@ namespace MiniEcommerce.Application.Services
                 }
             }
 
-            pedido.CalcularValores();
+            pedido.ValorDesconto = carrinho.ValorDesconto;
+            pedido.ValorTotal = carrinho.ValorTotal;
+            //pedido.CalcularValores();
 
             var pedidoCriado = await _repositorioPedido.AdicionarAsync(pedido);
             return await MapearParaDTOAsync(pedidoCriado);

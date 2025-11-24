@@ -19,6 +19,12 @@ namespace MiniEcommerce.Api.Controllers
         }
 
         [HttpGet]
+        public IActionResult TodosPedidos()
+        {
+            return View();
+        }
+
+        [HttpGet]
         public IActionResult MeusPedidos()
         {
             return View();
@@ -101,19 +107,15 @@ namespace MiniEcommerce.Api.Controllers
                 // Aplicar cupom se houver
                 if (!string.IsNullOrEmpty(carrinho.CodigoCupom))
                 {
-                    var desconto = await _servicoCupom.ValidarECalcularDescontoAsync(
-                        carrinho.CodigoCupom, 
-                        carrinho.ValorSubtotal);
+                    var desconto = await _servicoCupom.ValidarECalcularDescontoAsync(carrinho.CodigoCupom, carrinho.ValorSubtotal);
                     carrinho.ValorDesconto = desconto;
                     carrinho.ValorTotal = carrinho.ValorSubtotal - desconto;
                 }
 
                 var pedido = await _servicoPedido.CriarPedidoAsync(carrinho, usuarioId);
 
-                // Processar pedido automaticamente
                 await _servicoPedido.ProcessarPedidoAsync(pedido.Id);
 
-                // Limpar carrinho
                 HttpContext.Session.Remove(CARRINHO_SESSION_KEY);
 
                 return Json(new { 
@@ -184,9 +186,7 @@ namespace MiniEcommerce.Api.Controllers
 
                 var carrinho = JsonSerializer.Deserialize<CarrinhoDTO>(carrinhoJson);
 
-                var desconto = await _servicoCupom.ValidarECalcularDescontoAsync(
-                    codigoCupom, 
-                    carrinho.ValorSubtotal);
+                var desconto = await _servicoCupom.ValidarECalcularDescontoAsync(codigoCupom, carrinho.ValorSubtotal);
 
                 carrinho.CodigoCupom = codigoCupom;
                 carrinho.ValorDesconto = desconto;

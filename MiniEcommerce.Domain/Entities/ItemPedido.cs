@@ -11,10 +11,5 @@ namespace MiniEcommerce.Domain.Entities
         public int Quantidade { get; set; }
         public decimal ValorUnitario { get; set; }
         public decimal ValorTotal { get; set; }
-
-        public void CalcularValorTotal()
-        {
-            ValorTotal = Quantidade * ValorUnitario;
-        }
     }
 }

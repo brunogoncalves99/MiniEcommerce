@@ -50,7 +50,6 @@ namespace MiniEcommerce.Api.Controllers
             try
             {
                 // Verificar se existe o usuario, caso não exista cria um novo usuario
-
                 if(usuario.Id == 0)
                 {
                     await _servicoUsuario.CriarAsync(usuario);
