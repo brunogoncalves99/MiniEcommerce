@@ -8,11 +8,15 @@ namespace MiniEcommerce.Api.Controllers
     {
         private const string CARRINHO_SESSION_KEY = "Carrinho";
 
+        #region Index
+
         [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
+
+        #endregion
 
         #region Adicionar itens no carrinho
         [HttpPost]
@@ -102,6 +106,8 @@ namespace MiniEcommerce.Api.Controllers
 
         #endregion
 
+        #region Obter todos os produtos do carrinho
+
         [HttpGet]
         public IActionResult Obter()
         {
@@ -115,6 +121,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
+
+        #region Limpar carrinho
 
         [HttpPost]
         public IActionResult Limpar()
@@ -129,7 +138,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Obter dados do Carrinho
         private CarrinhoDTO ObterCarrinho()
         {
             var carrinhoJson = HttpContext.Session.GetString(CARRINHO_SESSION_KEY);
@@ -141,17 +152,23 @@ namespace MiniEcommerce.Api.Controllers
 
             return JsonSerializer.Deserialize<CarrinhoDTO>(carrinhoJson);
         }
+        #endregion
 
+        #region Salvar Carrinho
         private void SalvarCarrinho(CarrinhoDTO carrinho)
         {
             var carrinhoJson = JsonSerializer.Serialize(carrinho);
             HttpContext.Session.SetString(CARRINHO_SESSION_KEY, carrinhoJson);
         }
 
+        #endregion
+
+        #region Calcular Total do carrinho
         private void CalcularTotais(CarrinhoDTO carrinho)
         {
             carrinho.ValorSubtotal = carrinho.Itens.Sum(i => i.ValorTotal);
             carrinho.ValorTotal = carrinho.ValorSubtotal - carrinho.ValorDesconto;
         }
+        #endregion
     }
 }

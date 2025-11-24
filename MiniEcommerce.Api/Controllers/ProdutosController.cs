@@ -13,12 +13,15 @@ namespace MiniEcommerce.Api.Controllers
             _servicoProduto = servicoProduto;
         }
 
+        #region View Index
         [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
+        #endregion
 
+        #region Metodo para retornar todos os produtos
         [HttpGet]
         public async Task<IActionResult> ObterTodos()
         {
@@ -32,7 +35,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Metodo para obter id do produto
         [HttpGet]
         public async Task<IActionResult> ObterPorId(int id)
         {
@@ -51,6 +56,9 @@ namespace MiniEcommerce.Api.Controllers
             }
         }
 
+        #endregion
+
+        #region Metodo para criar produto
         [HttpPost]
         public async Task<IActionResult> Criar([FromBody] ProdutoDTO produtoDto)
         {
@@ -68,6 +76,9 @@ namespace MiniEcommerce.Api.Controllers
             }
         }
 
+        #endregion
+
+        #region Metodo para atualizar produto
         [HttpPut]
         public async Task<IActionResult> Atualizar([FromBody] ProdutoDTO produtoDto)
         {
@@ -84,6 +95,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
+
+        #region Metodo para deletar produto
 
         [HttpDelete]
         public async Task<IActionResult> Deletar(int id)
@@ -98,7 +112,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Metodo para atualizar estoque do produto
         [HttpPut]
         public async Task<IActionResult> AtualizarEstoque(int id, int quantidade)
         {
@@ -112,5 +128,6 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
     }
 }

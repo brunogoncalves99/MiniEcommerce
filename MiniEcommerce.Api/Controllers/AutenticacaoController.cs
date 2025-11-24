@@ -14,6 +14,8 @@ namespace MiniEcommerce.Api.Controllers
             _servicoAutenticacao = servicoAutenticacao;
         }
 
+        #region Carregar View de login
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -25,7 +27,9 @@ namespace MiniEcommerce.Api.Controllers
 
             return View();
         }
+        #endregion
 
+        #region Metodo de acessar o sistema
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
         {
@@ -63,11 +67,17 @@ namespace MiniEcommerce.Api.Controllers
             }
         }
 
+        #endregion
+
+        #region Logout
+
         [HttpPost]
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
+
+        #endregion
     }
 }

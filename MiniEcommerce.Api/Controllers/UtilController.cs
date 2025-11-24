@@ -12,6 +12,7 @@ namespace MiniEcommerce.Api.Controllers
             _servicoProduto = servicoProduto;
         }
 
+        #region Metodo para correção de imagens 
         [HttpGet]
         public async Task<IActionResult> CorrigirImagensProdutos()
         {
@@ -52,5 +53,6 @@ namespace MiniEcommerce.Api.Controllers
                 });
             }
         }
+        #endregion
     }
 }

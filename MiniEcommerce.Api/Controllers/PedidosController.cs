@@ -18,18 +18,25 @@ namespace MiniEcommerce.Api.Controllers
             _servicoCupom = servicoCupom;
         }
 
+        #region View para retornar Todos os Pedidos
+
         [HttpGet]
         public IActionResult TodosPedidos()
         {
             return View();
         }
 
+        #endregion
+
+        #region View para retornar todos meus pedidos
         [HttpGet]
         public IActionResult MeusPedidos()
         {
             return View();
         }
+        #endregion
 
+        #region Metodo para Obter todos meus pedidos
         [HttpGet]
         public async Task<IActionResult> ObterMeusPedidos()
         {
@@ -50,7 +57,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Metodo para obter todos os pedidos
         [HttpGet]
         public async Task<IActionResult> ObterTodos()
         {
@@ -64,7 +73,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Metodo para obter o pedido
         [HttpGet]
         public async Task<IActionResult> ObterPorId(int id)
         {
@@ -82,7 +93,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Metodo para criar Pedido
         [HttpPost]
         public async Task<IActionResult> Criar()
         {
@@ -129,7 +142,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Metodo para atualizar status do Pedido
         [HttpPut]
         public async Task<IActionResult> AtualizarStatus([FromBody] dynamic dados)
         {
@@ -146,7 +161,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Metodo para marcar como entregue
         [HttpPost]
         public async Task<IActionResult> MarcarComoEntregue(int pedidoId)
         {
@@ -160,7 +177,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Metodo para finalizar pedido
         [HttpPost]
         public async Task<IActionResult> Finalizar(int pedidoId)
         {
@@ -174,7 +193,9 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
 
+        #region Metodo para aplicar cupom
         [HttpPost]
         public async Task<IActionResult> AplicarCupom([FromBody] string codigoCupom)
         {
@@ -206,5 +227,7 @@ namespace MiniEcommerce.Api.Controllers
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
+        #endregion
+
     }
 }

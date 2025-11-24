@@ -12,17 +12,27 @@ namespace MiniEcommerce.Api.Controllers
         {
             _cupomService = cupomService;
         }
+
+        #region Index
+
         public IActionResult Index()
         {
             return View();
         }
+        #endregion
 
+        #region Listar todos os cupons
+        
         [HttpGet]
         public async Task<IActionResult> Listar()
         {
             var cupons = await _cupomService.ObterTodosAsync();
             return Json(cupons);
         }
+
+        #endregion
+
+        #region Buscar Cupom
 
         [HttpGet]
         public async Task<IActionResult> Buscar(int id)
@@ -34,7 +44,9 @@ namespace MiniEcommerce.Api.Controllers
 
             return Json(cupom);
         }
+        #endregion
 
+        #region Salvar Cupom e Editar Cupom
 
         [HttpPost]
         public async Task<IActionResult> Salvar([FromBody] CupomDTO dto)
@@ -77,6 +89,10 @@ namespace MiniEcommerce.Api.Controllers
             }
         }
 
+        #endregion
+
+        #region Excluir cupom
+
         [HttpDelete]
         public async Task<IActionResult> Excluir(int id)
         {
@@ -99,5 +115,6 @@ namespace MiniEcommerce.Api.Controllers
                 });
             }
         }
+        #endregion
     }
 }

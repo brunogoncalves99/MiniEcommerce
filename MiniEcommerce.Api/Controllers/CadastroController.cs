@@ -14,19 +14,25 @@ namespace MiniEcommerce.Api.Controllers
             _servicoUsuario = servicoUsuario;
         }
 
+        #region Carregar view de Usuarios
         [HttpGet]
         public IActionResult Usuarios()
         {
             return View();
         }
+        #endregion
+
+        #region Listar Usuarios do sistema
 
         [HttpGet]
-
         public async Task<IActionResult> ListarUsuarios()
         {
             var usuarios = await _servicoUsuario.ObterTodosAsync();
             return Json(usuarios);
         }
+        #endregion
+
+        #region Busca Usuario
 
         [HttpGet]
         public async Task<IActionResult> BuscarUsuario(int id)
@@ -38,6 +44,10 @@ namespace MiniEcommerce.Api.Controllers
 
             return Json(usuarios);
         }
+
+        #endregion
+
+        #region Cadastrar usuario e editar usuario
 
         [HttpPost]
         public async Task<IActionResult> Cadastrar([FromBody] UsuarioDTO usuario)
@@ -80,6 +90,10 @@ namespace MiniEcommerce.Api.Controllers
             }
         }
 
+        #endregion
+
+        #region Deletar usuario
+
         [HttpPost]
         public async Task<IActionResult> Deletar(int id)
         {
@@ -102,5 +116,7 @@ namespace MiniEcommerce.Api.Controllers
                 });
             }
         }
+
+        #endregion
     }
 }
